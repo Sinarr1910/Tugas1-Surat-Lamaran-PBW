@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Tugas 4 - Latihan Praktikum</title>
+    <title>Tugas 4</title>
     <style>
 
         .kotak-hasil {
