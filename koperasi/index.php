@@ -106,7 +106,7 @@ unset($_SESSION['notif'], $_SESSION['notif_type']);
                 <span class="badge bg-secondary ms-1"><?= $total_rows ?> data</span>
             </h5>
             <a href="tambah.php" class="btn btn-success btn-sm px-3">
-                <i class="bi bi-plus-circle me-1"></i>Tambah Transaksi
+                <i class="bi bi-plus-circle me-1"></i>Tambahkan Transaksi
             </a>
         </div>
 
