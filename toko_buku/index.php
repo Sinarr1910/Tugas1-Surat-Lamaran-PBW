@@ -14,21 +14,21 @@
 
     <div class="container mt-4">
         <!-- Notifikasi status operasi -->
-<?php if (isset($_GET['status'])): ?>
-    <?php if ($_GET['status'] == 'hapus_sukses'): ?>
-        <div class="alert alert-success alert-dismissible fade show">
-            Buku berhasil dihapus!
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php elseif ($_GET['status'] == 'edit_sukses'): ?>
-        <div class="alert alert-success alert-dismissible fade show">
-            Data buku berhasil diperbarui!
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php elseif ($_GET['status'] == 'hapus_gagal'): ?>
-        <div class="alert alert-danger">Gagal menghapus buku.</div>
-    <?php endif; ?>
-<?php endif; ?>
+         <?php if (isset($_GET['status'])): ?>
+            <?php if ($_GET['status'] == 'hapus_sukses'): ?>
+                <div class="alert alert-success alert-dismissible fade show">
+                    Buku berhasil dihapus!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <?php elseif ($_GET['status'] == 'edit_sukses'): ?>
+                    <div class="alert alert-success alert-dismissible fade show">
+                        Data buku berhasil diperbarui!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <?php elseif ($_GET['status'] == 'hapus_gagal'): ?>
+                        <div class="alert alert-danger">Gagal menghapus buku.</div>
+                        <?php endif; ?>
+                        <?php endif; ?>
 
         <h2>Daftar Buku</h2>
 
