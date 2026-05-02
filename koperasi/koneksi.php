@@ -1,25 +1,14 @@
 <?php
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'koperasi_db');
-define('DB_USER', 'root');       
-define('DB_PASS', '');      
-define('DB_CHARSET', 'utf8mb4');
+$host     = 'localhost';
+$dbname   = 'koperasi_db';
+$username = 'root';
+$password = '';
 
-$dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+$conn = new mysqli($host, $username, $password, $dbname);
 
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,   
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
-
-try {
-    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-} catch (PDOException $e) {
-
-    die(json_encode([
-        'status'  => 'error',
-        'message' => 'Koneksi database gagal: ' . $e->getMessage()
-    ]));
+if ($conn->connect_error) {
+    die("Koneksi gagal: " . $conn->connect_error);
 }
+
+$conn->set_charset("utf8mb4");

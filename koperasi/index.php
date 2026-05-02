@@ -1,6 +1,12 @@
 <?php
+// Proteksi halaman (sesuai buku hal. 156)
+session_start();
+if (!isset($_SESSION['login_Un51k4'])) {
+    header("Location: login.php?message=" . urlencode("Silahkan login terlebih dahulu"));
+    exit;
+}
 
-require_once 'koneksi.php';
+include 'koneksi.php';
 
 
 $per_page = 5;
@@ -15,41 +21,39 @@ if ($search !== '') {
     $keyword = '%' . $search . '%';
 
 
-    $stmt_count = $pdo->prepare(
-        "SELECT COUNT(*) FROM transaksi
-         WHERE nama_mahasiswa LIKE ? OR nama_produk LIKE ?"
-    );
-    $stmt_count->execute([$keyword, $keyword]);
-    $total_rows = $stmt_count->fetchColumn();
-
-
-    $stmt = $pdo->prepare(
-        "SELECT * FROM transaksi
-         WHERE nama_mahasiswa LIKE ? OR nama_produk LIKE ?
-         ORDER BY id ASC
-         LIMIT ? OFFSET ?"
-    );
-    $stmt->execute([$keyword, $keyword, $per_page, $offset]);
-} else {
-    $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM transaksi");
+    $stmt_count = $conn->prepare("SELECT COUNT(*) FROM transaksi WHERE nama_mahasiswa LIKE ? OR nama_produk LIKE ?");
+    $stmt_count->bind_param("ss", $keyword, $keyword);
     $stmt_count->execute();
-    $total_rows = $stmt_count->fetchColumn();
+    $stmt_count->bind_result($total_rows);
+    $stmt_count->fetch();
+    $stmt_count->close();
 
-    $stmt = $pdo->prepare(
-        "SELECT * FROM transaksi
-         ORDER BY id ASC
-         LIMIT ? OFFSET ?"
-    );
-    $stmt->execute([$per_page, $offset]);
+
+    $stmt = $conn->prepare("SELECT * FROM transaksi WHERE nama_mahasiswa LIKE ? OR nama_produk LIKE ? ORDER BY id ASC LIMIT ? OFFSET ?");
+    $stmt->bind_param("ssii", $keyword, $keyword, $per_page, $offset);
+} else {
+
+    $stmt_count = $conn->prepare("SELECT COUNT(*) FROM transaksi");
+    $stmt_count->execute();
+    $stmt_count->bind_result($total_rows);
+    $stmt_count->fetch();
+    $stmt_count->close();
+
+
+    $stmt = $conn->prepare("SELECT * FROM transaksi ORDER BY id ASC LIMIT ? OFFSET ?");
+    $stmt->bind_param("ii", $per_page, $offset);
 }
 
-$transaksi  = $stmt->fetchAll();
+$stmt->execute();
+$result     = $stmt->get_result();
+$transaksi  = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+
 $total_pages = ceil($total_rows / $per_page);
 
 
-session_start();
-$notif       = $_SESSION['notif']       ?? null;
-$notif_type  = $_SESSION['notif_type']  ?? 'success';
+$notif      = $_SESSION['notif']      ?? null;
+$notif_type = $_SESSION['notif_type'] ?? 'success';
 unset($_SESSION['notif'], $_SESSION['notif_type']);
 ?>
 <!DOCTYPE html>
@@ -58,9 +62,7 @@ unset($_SESSION['notif'], $_SESSION['notif_type']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Transaksi Koperasi</title>
-    <!-- Bootstrap 5 CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body        { background-color: #f0f4f8; }
@@ -83,7 +85,12 @@ unset($_SESSION['notif'], $_SESSION['notif_type']);
         <a class="navbar-brand fw-bold fs-5" href="index.php">
             <i class="bi bi-shop me-2"></i>Koperasi Mahasiswa Universitas Singaperbangsa Karawang
         </a>
-        <span class="text-white-50 small"><i class="bi bi-calendar3 me-1"></i><?= date('d M Y') ?></span>
+        <div class="d-flex align-items-center gap-3">
+            <a href="logout.php" class="btn btn-outline-light btn-sm px-3"
+               onclick="return confirm('Yakin ingin keluar?')">
+                <i class="bi bi-box-arrow-right me-1"></i>Logout
+            </a>
+        </div>
     </div>
 </nav>
 
@@ -106,7 +113,7 @@ unset($_SESSION['notif'], $_SESSION['notif_type']);
                 <span class="badge bg-secondary ms-1"><?= $total_rows ?> data</span>
             </h5>
             <a href="tambah.php" class="btn btn-success btn-sm px-3">
-                <i class="bi bi-plus-circle me-1"></i>Tambahkan Transaksi
+                <i class="bi bi-plus-circle me-1"></i>Tambah Transaksi
             </a>
         </div>
 
@@ -129,7 +136,7 @@ unset($_SESSION['notif'], $_SESSION['notif_type']);
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="text-center" style="width:60px">#</th>
+                        <th class="text-center" style="width:60px">No</th>
                         <th><i class="bi bi-person me-1"></i>Mahasiswa</th>
                         <th><i class="bi bi-box-seam me-1"></i>Produk</th>
                         <th><i class="bi bi-person-badge me-1"></i>Pegawai</th>
@@ -140,10 +147,10 @@ unset($_SESSION['notif'], $_SESSION['notif_type']);
                 </thead>
                 <tbody>
                 <?php if (count($transaksi) > 0): ?>
-                    <?php foreach ($transaksi as $row): ?>
+                <?php $no = $offset + 1; foreach ($transaksi as $row): ?>
                     <tr>
                         <td class="text-center">
-                            <span class="badge-id"><?= $row['id'] ?></span>
+                            <span class="badge-id"><?= $no++ ?></span>
                         </td>
                         <td><?= htmlspecialchars($row['nama_mahasiswa']) ?></td>
                         <td><?= htmlspecialchars($row['nama_produk']) ?></td>
@@ -206,6 +213,6 @@ unset($_SESSION['notif'], $_SESSION['notif_type']);
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
